@@ -1,5 +1,7 @@
 ### Go ###
 
+/.k8s/configmap.yaml
+
 # etc directory
 /etc/
 
@@ -93,7 +95,4 @@ fabric.properties
 .idea/httpRequests
 
 # Ignores the whole .idea folder and all .iml files
-.idea/!/.k8s/configmap.yaml
-!/.k8s/configmap.yaml
-!/.k8s/configmap.yaml
-!/.k8s/configmap.yaml
+.idea/
