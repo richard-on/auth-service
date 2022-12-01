@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "./authService;authService";
+
+package authService;
+
+service AuthService {
+  rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+}
+
+message ValidateRequest {
+  string accessToken = 1;
+  string refreshToken = 2;
+}
+
+message ValidateResponse {
+  enum TokenStatus {
+    OK = 0;
+    UPDATE_ACCESS = 1;
+    UPDATE_REFRESH = 2;
+    UPDATE_ALL = 3;
+  }
+  TokenStatus tokenStatus = 1;
+  string accessToken = 2;
+  string refreshToken = 3;
+  string username = 4;
+}
