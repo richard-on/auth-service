@@ -1,0 +1,188 @@
+basePath: /
+definitions:
+  request.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  request.RegistrationRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  response.LoginResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      username:
+        type: string
+    type: object
+  response.RegistrationResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      username:
+        type: string
+    type: object
+  response.ValidateResponse:
+    properties:
+      username:
+        type: string
+    type: object
+host: https://auth.richardhere.dev/
+info:
+  contact:
+    name: Richard Ragusski
+    url: https://richardhere.dev/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Auth Service API
+  version: "1.0"
+paths:
+  /auth/v1/i:
+    get:
+      description: Get login
+      operationId: info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Info
+      tags:
+      - Auth
+  /auth/v1/login:
+    post:
+      consumes:
+      - application/json
+      description: Login to an account
+      operationId: login-account
+      parameters:
+      - description: Account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Login
+      tags:
+      - Auth
+  /auth/v1/logout:
+    post:
+      description: Logout from account
+      operationId: logout-account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Logout
+      tags:
+      - Auth
+  /auth/v1/reg:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      operationId: registration
+      parameters:
+      - description: Account info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegistrationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegistrationResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Registration
+      tags:
+      - Auth
+  /auth/v1/validate:
+    post:
+      description: This route validates tokens and returns user info
+      operationId: validate
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ValidateResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Validate
+      tags:
+      - Auth
+swagger: "2.0"

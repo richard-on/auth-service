@@ -1,10 +1,7 @@
 package main
 
 import (
-	"database/sql"
-	"github.com/richard-on/auth-service/internal/db"
 	"github.com/richard-on/auth-service/internal/grpcServer"
-	"github.com/richard-on/auth-service/internal/model"
 	"os"
 	"runtime"
 	"strconv"
@@ -25,6 +22,14 @@ var (
 	build   string
 )
 
+// @title         Auth Service API
+// @version       1.0
+// @contact.name  Richard Ragusski
+// @contact.url   https://richardhere.dev/
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @host          https://auth.richardhere.dev/
+// @BasePath      /
 func main() {
 	var err error
 
@@ -67,7 +72,7 @@ func main() {
 		log.Info("sentry setup complete")
 	}
 
-	dbConn, err := sql.Open("postgres", config.DbConnString)
+	/*dbConn, err := sql.Open("postgres", config.DbConnString)
 	if err != nil {
 		log.Fatal(err, "error while opening db connection")
 	}
@@ -82,7 +87,7 @@ func main() {
 	err = userDb.AddUser(&model.User{
 		Username: "richard",
 		Password: "qwerty",
-	})
+	})*/
 
 	// Starting gRPC server only once
 	if !fiber.IsChild() {

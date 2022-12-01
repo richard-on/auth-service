@@ -45,9 +45,9 @@ func NewAuthHandler(router fiber.Router, authService authService.AuthServiceClie
 // @ID           login-account
 // @Accept       json
 // @Produce      json
-// @Param        input    body      handlers.LoginRequest  true  "Account info"
-// @Success      200      {object}  handlers.LoginResponse
-// @Failure      403,500  {object}  handlers.ErrorResponse
+// @Param        input    body      request.LoginRequest  true  "Account info"
+// @Success      200      {object}  response.LoginResponse
+// @Failure      403,500  {object}  response.ErrorResponse
 // @Router       /auth/v1/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	dbConn, err := sql.Open("postgres", config.DbConnString)
@@ -162,8 +162,8 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 // @Description  This route validates tokens and returns user info
 // @ID           validate
 // @Produce      json
-// @Success      200          {object}  handlers.ValidateResponse
-// @Failure      401,403,500  {object}  handlers.ErrorResponse
+// @Success      200          {object}  response.ValidateResponse
+// @Failure      401,403,500  {object}  response.ErrorResponse
 // @Router       /auth/v1/validate [post]
 func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
@@ -207,7 +207,7 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 // @ID           logout-account
 // @Produce      json
 // @Success      200      {string}  ok
-// @Failure      401,500  {object}  handlers.ErrorResponse
+// @Failure      401,500  {object}  response.ErrorResponse
 // @Router       /auth/v1/logout [post]
 func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
@@ -243,7 +243,7 @@ func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 // @ID           info
 // @Produce      json
 // @Success      200      {string}  ok
-// @Failure      403,500  {object}  handlers.ErrorResponse
+// @Failure      403,500  {object}  response.ErrorResponse
 // @Router       /auth/v1/i [get]
 func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
@@ -261,7 +261,18 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(response.ValidateResponse{Username: validateResponse.Username})
 }
 
-func (h *AuthHandler) Register(ctx *fiber.Ctx) error {
+// Registration endpoint
+// @Summary      Registration
+// @Tags         Auth
+// @Description  Register a new user
+// @ID           registration
+// @Accept       json
+// @Produce      json
+// @Param        input    body      request.RegistrationRequest  true  "Account info"
+// @Success      200      {object}  response.RegistrationResponse
+// @Failure      403,500  {object}  response.ErrorResponse
+// @Router       /auth/v1/reg [post]
+func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 
 	return nil
 }
