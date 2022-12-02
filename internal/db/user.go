@@ -30,28 +30,6 @@ func NewDatabase(db *sql.DB) *DB {
 	}
 }
 
-func Connect() (*sql.DB, error) {
-	dbConn, err := sql.Open("postgres", config.DbConnString)
-	if err != nil {
-		log.Fatal().Stack().Err(err).Msg(err.Error())
-
-		return nil, err
-	}
-
-	return dbConn, nil
-}
-
-func Close(conn *sql.DB) error {
-	err := conn.Close()
-	if err != nil {
-		log.Fatal().Stack().Err(err).Msg(err.Error())
-
-		return err
-	}
-
-	return nil
-}
-
 // AddUser adds new user to database.
 // If user with such login already exists, UserAlreadyExistsError returned. Otherwise, hashed password is generated
 // and user inserted into database. If no more errors occurred, nil is returned.
@@ -81,8 +59,8 @@ func (db *DB) AddUser(user *model.User) error {
 		}
 
 		// Insert new user into users table
-		_, err = db.Db.Exec("INSERT INTO users(username, password, email, last_login) VALUES($1, $2, $3, $4)",
-			user.Username, hashedPassword, user.Email, time.Now())
+		_, err = db.Db.Exec("INSERT INTO users(id, username, password, email, last_login) VALUES($1, $2, $3, $4, $5)",
+			user.ID, user.Username, hashedPassword, user.Email, time.Now())
 		if err != nil {
 			return err
 		}

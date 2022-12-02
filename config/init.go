@@ -42,6 +42,7 @@ var GoDotEnv bool
 var FiberPrefork bool
 var MaxCPU int
 var Secret string
+var AES string
 
 func Init(log logger.Logger) {
 	var err error
@@ -49,6 +50,8 @@ func Init(log logger.Logger) {
 	Env = os.Getenv("ENV")
 
 	Secret = os.Getenv("SECRET")
+
+	AES = os.Getenv("AES")
 
 	GoDotEnv, err = strconv.ParseBool(os.Getenv("GODOTENV"))
 	if err != nil {

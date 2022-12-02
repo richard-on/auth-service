@@ -19,7 +19,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
-  int64 id = 1;
+  string id = 1;
   string username = 2;
   string email = 3;
   string accessToken = 4;
@@ -27,18 +27,18 @@ message RegisterResponse {
 }
 
 message LoginRequest {
-  oneof loginData {
-    string username = 1;
-    string email = 2;
-  }
+  string username = 1;
+  string email = 2;
   string password = 3;
 }
 
 message LoginResponse {
-  int64 id = 1;
+  string id = 1;
   string username = 2;
   string email = 3;
   string lastLogin = 4;
+  string accessToken = 5;
+  string refreshToken = 6;
 }
 
 message ValidateRequest {
@@ -52,12 +52,13 @@ message ValidateResponse {
     UPDATE = 1;
   }
   TokenStatus tokenStatus = 1;
-  string accessToken = 2;
-  string refreshToken = 3;
+  string id = 2;
+  string accessToken = 3;
+  string refreshToken = 4;
 }
 
 message InfoResponse {
-  int64 id = 1;
+  string id = 1;
   string username = 2;
   string email = 3;
   string lastLogin = 4;

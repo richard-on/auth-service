@@ -62,7 +62,7 @@ func NewApp() Server {
 			}}),
 		prometheus.Middleware,
 		encryptcookie.New(encryptcookie.Config{
-			Key: encryptcookie.GenerateKey(),
+			Key: config.AES,
 		}),
 		logger.Middleware(
 			logger.NewLogger(config.DefaultWriter,

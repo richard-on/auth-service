@@ -2,6 +2,10 @@ package grpcServer
 
 import (
 	"context"
+	"crypto/tls"
+	"database/sql"
+	"github.com/richard-on/auth-service/internal/db"
+	"google.golang.org/grpc/credentials"
 	"net"
 	"os"
 	"os/signal"
@@ -34,9 +38,37 @@ func Run() {
 		log.Fatalf(err, "error while listening tcp")
 	}
 
+	dbConn, err := sql.Open("postgres", config.DbConnString)
+	if err != nil {
+		log.Fatal(err, "error while opening db connection")
+	}
+	defer func(dbConn *sql.DB) {
+		err = dbConn.Close()
+		if err != nil {
+			log.Fatal(err, "error while closing db connection")
+		}
+	}(dbConn)
+
+	userDb := db.NewDatabase(dbConn)
+
+	cert, err := tls.LoadX509KeyPair("/etc/server.crt", "/etc/server.key")
+	if err != nil {
+		log.Fatal(err, "error while loading gRPC TLS certificates")
+	}
+
+	opts := []grpc.ServerOption{
+		grpc.Creds(credentials.NewServerTLSFromCert(&cert)),
+	}
+
 	// Creating new gRPC server handlers
-	s := grpc.NewServer()
-	gRPCServer := &GRPCServer{}
+	s := grpc.NewServer(opts...)
+	gRPCServer := &GRPCServer{
+		UnimplementedAuthServiceServer: authService.UnimplementedAuthServiceServer{},
+		log: logger.NewLogger(config.DefaultWriter,
+			config.LogInfo.Level,
+			"auth-grpc"),
+		db: userDb,
+	}
 
 	authService.RegisterAuthServiceServer(s, gRPCServer)
 
