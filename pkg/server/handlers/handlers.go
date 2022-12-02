@@ -4,20 +4,19 @@ package handlers
 import (
 	"database/sql"
 	"encoding/base64"
-	"strings"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
 	_ "github.com/lib/pq"
-
 	"github.com/richard-on/auth-service/config"
 	"github.com/richard-on/auth-service/internal/db"
 	"github.com/richard-on/auth-service/internal/model"
+	"github.com/richard-on/auth-service/internal/request"
 	"github.com/richard-on/auth-service/internal/response"
 	"github.com/richard-on/auth-service/internal/token"
 	"github.com/richard-on/auth-service/pkg/authService"
 	"github.com/richard-on/auth-service/pkg/cookie"
 	"github.com/richard-on/auth-service/pkg/logger"
+	"strings"
 )
 
 type AuthHandler struct {
@@ -48,7 +47,7 @@ func NewAuthHandler(router fiber.Router, authService authService.AuthServiceClie
 // @Param        input    body      request.LoginRequest  true  "Account info"
 // @Success      200      {object}  response.LoginResponse
 // @Failure      403,500  {object}  response.ErrorResponse
-// @Router       /auth/v1/login [post]
+// @Router       /v1/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	dbConn, err := sql.Open("postgres", config.DbConnString)
 	if err != nil {
@@ -71,7 +70,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		// If no Authorization info was found in header, expect login info in request body as required by v1.0
 		if err = ctx.BodyParser(&user); err != nil {
 			h.log.Debugf("body parsing error: %v", err)
-			return ctx.Status(fiber.StatusBadRequest).JSON(response.ErrorResponse{Error: err.Error()})
+			return ctx.Status(fiber.StatusBadRequest).JSON(response.Error{Error: err.Error()})
 		}
 
 	} else {
@@ -92,7 +91,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		if err != nil {
 			h.log.Error(err, "error decoding base64-encoded auth info")
 
-			return ctx.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
+			return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
 		}
 
 		// Split user credentials
@@ -102,7 +101,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		if len(userCredentials) != 2 {
 			h.log.Debug(ErrIncorrectCredentialsFormat)
 
-			return ctx.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{
+			return ctx.Status(fiber.StatusForbidden).JSON(response.Error{
 				Error: ErrIncorrectCredentialsFormat.Error(),
 			})
 		}
@@ -116,27 +115,27 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Debug(err)
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
 	}
 
 	accessToken, err := token.NewToken(&jwt.MapClaims{
-		"login": user.Username,
+		"username": user.Username,
 	}, config.TTL.Access)
 
 	if err != nil {
 		h.log.Error(err, "error while creating access token")
 
-		return ctx.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
 	}
 
 	refreshToken, err := token.NewToken(&jwt.MapClaims{
-		"login": user.Username,
+		"username": user.Username,
 	}, config.TTL.Refresh)
 
 	if err != nil {
 		h.log.Error(err, "error while creating refresh token")
 
-		return ctx.Status(fiber.StatusInternalServerError).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
 	}
 
 	// Access token cookie
@@ -150,9 +149,9 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		return ctx.Redirect(redirectURI)
 	}
 
-	return ctx.JSON(fiber.Map{
-		"accessToken":  accessToken.GetRaw(),
-		"refreshToken": refreshToken.GetRaw(),
+	return ctx.Status(fiber.StatusOK).JSON(response.LoginSuccess{
+		Username:  user.Username,
+		LastLogin: user.LastLogin,
 	})
 }
 
@@ -175,10 +174,10 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Error(err, "validation error")
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
 	}
 
-	// Getting access and refresh tokens ttl
+	// Getting access and refresh tokens TTL
 	accessTokenTTL := config.TTL.Access
 	refreshTokenTTL := config.TTL.Refresh
 
@@ -197,7 +196,7 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 		cookie.SetCookie(ctx, "refreshToken", validateResponse.RefreshToken, refreshTokenTTL)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(response.ValidateResponse{Username: validateResponse.Username})
+	return ctx.Status(fiber.StatusOK).JSON(response.ValidateSuccess{Username: validateResponse.Username})
 }
 
 // Logout
@@ -219,7 +218,7 @@ func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Error(err, "validation error")
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
 	}
 
 	// Removing accessToken cookie
@@ -253,12 +252,39 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 
 	validateResponse, err := h.AuthService.Validate(ctx.Context(), validateRequest)
 	if err != nil {
-		h.log.Error(err, "validation error")
+		h.log.Debug(err, "validation error")
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(response.ValidateResponse{Username: validateResponse.Username})
+	dbConn, err := sql.Open("postgres", config.DbConnString)
+	if err != nil {
+		h.log.Fatal(err, "error while opening db connection")
+	}
+	defer func(dbConn *sql.DB) {
+		err = dbConn.Close()
+		if err != nil {
+			h.log.Fatal(err, "error while closing db connection")
+		}
+	}(dbConn)
+
+	userDb := db.NewDatabase(dbConn)
+
+	var user model.User
+	user.Username = validateResponse.Username
+
+	err = userDb.GetUser(&user)
+	if err != nil {
+		h.log.Debug(err)
+
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response.InfoSuccess{
+		Email:     user.Email,
+		Username:  user.Username,
+		LastLogin: user.LastLogin,
+	})
 }
 
 // Registration endpoint
@@ -273,6 +299,83 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 // @Failure      403,500  {object}  response.ErrorResponse
 // @Router       /auth/v1/reg [post]
 func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
+	validateRequest := &authService.ValidateRequest{
+		AccessToken:  ctx.Cookies("accessToken"),
+		RefreshToken: ctx.Cookies("refreshToken"),
+	}
 
-	return nil
+	_, err := h.AuthService.Validate(ctx.Context(), validateRequest)
+	if err == nil {
+		h.log.Debug(ErrAlreadyLogged)
+
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: ErrAlreadyLogged.Error()})
+	}
+
+	dbConn, err := sql.Open("postgres", config.DbConnString)
+	if err != nil {
+		h.log.Fatal(err, "error while opening db connection")
+	}
+	defer func(dbConn *sql.DB) {
+		err = dbConn.Close()
+		if err != nil {
+			h.log.Fatal(err, "error while closing db connection")
+		}
+	}(dbConn)
+
+	userDb := db.NewDatabase(dbConn)
+
+	var regRequest request.Registration
+	var user model.User
+
+	if err = ctx.BodyParser(&regRequest); err != nil {
+		h.log.Debugf("body parsing error: %v", err)
+		return ctx.Status(fiber.StatusBadRequest).JSON(response.Error{Error: err.Error()})
+	}
+
+	user.Username = regRequest.Username
+	user.Password = regRequest.Password
+	user.Email = regRequest.Email
+
+	err = userDb.AddUser(&user)
+	if err != nil {
+		h.log.Debug(err)
+
+		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+	}
+
+	accessToken, err := token.NewToken(&jwt.MapClaims{
+		"login": user.Username,
+	}, config.TTL.Access)
+
+	if err != nil {
+		h.log.Error(err, "error while creating access token")
+
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
+	}
+
+	refreshToken, err := token.NewToken(&jwt.MapClaims{
+		"login": user.Username,
+	}, config.TTL.Refresh)
+
+	if err != nil {
+		h.log.Error(err, "error while creating refresh token")
+
+		return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
+	}
+
+	// Access token cookie
+	cookie.SetCookie(ctx, "accessToken", accessToken.GetRaw(), config.TTL.Access)
+
+	// Refresh token cookie
+	cookie.SetCookie(ctx, "refreshToken", refreshToken.GetRaw(), config.TTL.Refresh)
+
+	// If there's redirect_uri param then sending redirect command
+	if redirectURI := ctx.Query("redirect_uri"); redirectURI != "" {
+		return ctx.Redirect(redirectURI)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response.RegistrationSuccess{
+		Username: user.Username,
+		Email:    user.Email,
+	})
 }

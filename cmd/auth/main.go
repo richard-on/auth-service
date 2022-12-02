@@ -72,23 +72,6 @@ func main() {
 		log.Info("sentry setup complete")
 	}
 
-	/*dbConn, err := sql.Open("postgres", config.DbConnString)
-	if err != nil {
-		log.Fatal(err, "error while opening db connection")
-	}
-	defer func(dbConn *sql.DB) {
-		err = dbConn.Close()
-		if err != nil {
-			log.Fatal(err, "error while closing db connection")
-		}
-	}(dbConn)
-
-	userDb := db.NewDatabase(dbConn)
-	err = userDb.AddUser(&model.User{
-		Username: "richard",
-		Password: "qwerty",
-	})*/
-
 	// Starting gRPC server only once
 	if !fiber.IsChild() {
 		go grpcServer.Run()

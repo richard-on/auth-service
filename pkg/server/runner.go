@@ -18,11 +18,8 @@ func (s *Server) Run() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 
-	// /auth
-	auth := s.app.Group("/auth")
-
 	// Middleware for /auth/v1
-	v1 := auth.Group("/v1", func(c *fiber.Ctx) error {
+	v1 := s.app.Group("/v1", func(c *fiber.Ctx) error {
 		c.Set("Version", "v1.0")
 		return c.Next()
 	})
@@ -48,7 +45,7 @@ func (s *Server) Run() {
 	routes.AuthRouter(v1, authClient)
 
 	go func() {
-		if err := s.app.Listen(":80"); err != nil {
+		if err = s.app.Listen(":80"); err != nil {
 			s.log.Fatalf(err, "error while listening at port 80")
 		}
 	}()

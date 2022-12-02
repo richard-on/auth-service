@@ -1,24 +1,33 @@
 package response
 
-type LoginResponse struct {
-	Username     string `json:"username"`
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+import (
+	"time"
+)
+
+type LoginSuccess struct {
+	Email     string    `json:"email,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	LastLogin time.Time `json:"lastLogin"`
 }
 
-type RegistrationResponse struct {
-	Username     string `json:"username"`
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+type RegistrationSuccess struct {
+	Email    string `json:"email,omitempty"`
+	Username string `json:"username,omitempty"`
 }
 
-type ValidateResponse struct {
+type ValidateSuccess struct {
 	Username string `json:"username"`
 }
 
-type ErrorResponse struct {
-	Error string `json:"error"`
+type InfoSuccess struct {
+	Email     string    `json:"email,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	LastLogin time.Time `json:"lastLogin"`
 }
 
-type LogoutResponse struct {
+type LogoutSuccess struct {
+}
+
+type Error struct {
+	Error string `json:"error"`
 }

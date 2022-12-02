@@ -17,6 +17,8 @@ func AuthRouter(app fiber.Router, authClient authService.AuthServiceClient) {
 
 	app.Post("/logout", handler.Logout)
 
+	app.Post("/reg", handler.Registration)
+
 	app.Get("/i", handler.Info)
 
 }

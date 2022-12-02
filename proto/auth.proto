@@ -5,7 +5,40 @@ option go_package = "./authService;authService";
 package authService;
 
 service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  //rpc VerifyRegistration(VerifyRequest) returns (VerifyResponse) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
   rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+  rpc Info(ValidateRequest) returns (InfoResponse) {}
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string accessToken = 4;
+  string refreshToken = 5;
+}
+
+message LoginRequest {
+  oneof loginData {
+    string username = 1;
+    string email = 2;
+  }
+  string password = 3;
+}
+
+message LoginResponse {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string lastLogin = 4;
 }
 
 message ValidateRequest {
@@ -16,12 +49,16 @@ message ValidateRequest {
 message ValidateResponse {
   enum TokenStatus {
     OK = 0;
-    UPDATE_ACCESS = 1;
-    UPDATE_REFRESH = 2;
-    UPDATE_ALL = 3;
+    UPDATE = 1;
   }
   TokenStatus tokenStatus = 1;
   string accessToken = 2;
   string refreshToken = 3;
-  string username = 4;
+}
+
+message InfoResponse {
+  int64 id = 1;
+  string username = 2;
+  string email = 3;
+  string lastLogin = 4;
 }

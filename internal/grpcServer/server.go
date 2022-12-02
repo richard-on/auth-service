@@ -42,7 +42,7 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 		}
 
 		updatedAccessToken, err := token.NewToken(&jwt.MapClaims{
-			"login": (*refreshTokenClaims)["login"],
+			"username": (*refreshTokenClaims)["username"],
 		}, config.TTL.Access)
 		if err != nil {
 			s.log.Error(err, "error while creating new access token")
@@ -51,7 +51,7 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 		}
 
 		updatedRefreshToken, err := token.NewToken(&jwt.MapClaims{
-			"login": (*refreshTokenClaims)["login"],
+			"username": (*refreshTokenClaims)["username"],
 		}, config.TTL.Refresh)
 		if err != nil {
 			s.log.Error(err, "error while creating new refresh token")
@@ -61,7 +61,7 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 
 		return &authService.ValidateResponse{
 			TokenStatus:  authService.ValidateResponse_UPDATE_ALL,
-			Username:     (*refreshTokenClaims)["login"].(string),
+			Username:     (*refreshTokenClaims)["username"].(string),
 			AccessToken:  updatedAccessToken.GetRaw(),
 			RefreshToken: updatedRefreshToken.GetRaw(),
 		}, nil
@@ -76,7 +76,7 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 
 	return &authService.ValidateResponse{
 		TokenStatus:  authService.ValidateResponse_OK,
-		Username:     (*accessTokenClaims)["login"].(string),
+		Username:     (*accessTokenClaims)["username"].(string),
 		AccessToken:  accessToken.GetRaw(),
 		RefreshToken: refreshToken.GetRaw(),
 	}, nil

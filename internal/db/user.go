@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"regexp"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/rs/zerolog/log"
@@ -70,7 +71,7 @@ func (db *DB) AddUser(user *model.User) error {
 
 	// Check if user with this login already exists
 	res := db.Db.QueryRow("SELECT * FROM users where username = $1", user.Username)
-	err = res.Scan(&user.ID, &user.Username, &user.Password)
+	err = res.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.LastLogin)
 	if errors.Is(err, sql.ErrNoRows) {
 
 		// If login is available, compute hashed password
@@ -80,7 +81,8 @@ func (db *DB) AddUser(user *model.User) error {
 		}
 
 		// Insert new user into users table
-		_, err = db.Db.Exec("INSERT INTO users(username, password) VALUES($1, $2)", user.Username, hashedPassword)
+		_, err = db.Db.Exec("INSERT INTO users(username, password, email, last_login) VALUES($1, $2, $3, $4)",
+			user.Username, hashedPassword, user.Email, time.Now())
 		if err != nil {
 			return err
 		}
@@ -94,7 +96,7 @@ func (db *DB) AddUser(user *model.User) error {
 	return nil
 }
 
-// GetUser searches a user in database by login.
+// GetUser searches a user in database by username.
 // It then uses bcrypt.CompareHashAndPassword() to compare password hashes.
 // If user with such login isn't found or hashes do not match, BadCredentialsError is returned. Otherwise, nil is returned.
 func (db *DB) GetUser(user *model.User) error {
@@ -103,7 +105,7 @@ func (db *DB) GetUser(user *model.User) error {
 
 	// Search user in database by login
 	res := db.Db.QueryRow("SELECT * FROM users where username = $1", user.Username)
-	err := res.Scan(&user.ID, &user.Username, &user.Password)
+	err := res.Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.LastLogin)
 	if errors.Is(err, sql.ErrNoRows) {
 		// If no such user was found, return ErrBadCredentials.
 		return ErrBadCredentials
@@ -115,6 +117,11 @@ func (db *DB) GetUser(user *model.User) error {
 	// If they don't match, return ErrBadCredentials.
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(stringPassword)); err != nil {
 		return ErrBadCredentials
+	}
+
+	_, err = db.Db.Exec(`UPDATE users SET last_login = $1 WHERE id=$2`, time.Now(), user.ID)
+	if err != nil {
+		return err
 	}
 
 	return nil
