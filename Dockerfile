@@ -18,7 +18,7 @@ COPY --from=builder /auth/run /auth/run
 COPY --from=builder /auth/.env /auth/.env
 COPY --from=builder /auth/public /auth/public/
 
-EXPOSE 80 4000Be
+EXPOSE 80 4000
 
 RUN mkdir -p /auth/logs && \
     apk update && apk add curl && apk add --no-cache bash && \

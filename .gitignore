@@ -1,6 +1,6 @@
 ### Go ###
 
-/.k8s/configmap.yaml
+/k8s/secrets.yaml
 
 # etc directory
 /etc/

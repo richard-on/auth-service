@@ -3,35 +3,29 @@ services:
 
   postgres:
     image: postgres:15.1
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 14112002Rich
-      PGDATA: "/var/lib/postgresql/data/pgdata"
-    volumes:
-      - ../2. Init Database:/docker-entrypoint-initdb.d
-      - .:/var/lib/postgresql/data
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U habrpguser -d habrdb" ]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 4G
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./initDB/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   auth:
     build:
       dockerfile: Dockerfile
       context: .
     image: ghcr.io/richard-on/auth-service:latest
-    container_name: website
+    container_name: auth-service
     restart: unless-stopped
     healthcheck:
       test: [ "CMD", "curl", "-f", "-k", "https://127.0.0.1/" ]
@@ -42,6 +36,8 @@ services:
     ports:
       - "80:80"
       - "4000:4000"
+    links:
+      - postgres
     environment:
       - ENV
       - SECRET
@@ -65,3 +61,7 @@ services:
       - DB_SSLMODE
       - TTL_ACCESS
       - TTL_REFRESH
+
+volumes:
+  postgres:
+    driver: local

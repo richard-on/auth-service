@@ -26,10 +26,13 @@ spec:
             failureThreshold: 10
             periodSeconds: 60
             timeoutSeconds: 5
-          name: website
+          name: auth
           ports:
             - containerPort: 80
+            - containerPort: 4000
           envFrom:
+            - secretRef:
+                name: auth-secret
             - configMapRef:
                 name: auth-config
           resources:
