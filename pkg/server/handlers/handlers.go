@@ -6,11 +6,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	_ "github.com/lib/pq"
 	"github.com/richard-on/auth-service/config"
+	"github.com/richard-on/auth-service/internal/cookie"
 	"github.com/richard-on/auth-service/internal/model"
-	"github.com/richard-on/auth-service/internal/response"
 	"github.com/richard-on/auth-service/pkg/authService"
-	"github.com/richard-on/auth-service/pkg/cookie"
 	"github.com/richard-on/auth-service/pkg/logger"
+	"github.com/richard-on/auth-service/pkg/response"
 	"strings"
 )
 
@@ -29,16 +29,16 @@ func NewAuthHandler(router fiber.Router, authService authService.AuthServiceClie
 }
 
 // Registration endpoint
-// @Summary      Registration
+// @Summary      Registration endpoint
 // @Tags         Auth
 // @Description  Register a new user
 // @ID           registration
 // @Accept       json
 // @Produce      json
-// @Param        input    body      request.RegistrationRequest  true  "Account info"
-// @Success      200      {object}  response.RegistrationResponse
-// @Failure      403,500  {object}  response.ErrorResponse
-// @Router       /v1/reg [post]
+// @Param        input                body      authService.RegisterRequest  true  "Register request"
+// @Success      200                  {object}  response.RegistrationSuccess
+// @Failure      303,400,403,409,500  {object}  response.Error
+// @Router       /reg [post]
 func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
 		AccessToken:  ctx.Cookies("accessToken"),
@@ -49,7 +49,7 @@ func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 	if err == nil { // if NO error, which means user is logged in
 		h.log.Debug(ErrAlreadyLogged)
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: ErrAlreadyLogged.Error()})
+		return ctx.Status(fiber.StatusSeeOther).JSON(response.Error{Error: ErrAlreadyLogged.Error()})
 	}
 
 	regRequest := &authService.RegisterRequest{}
@@ -62,7 +62,7 @@ func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 	regResponse, err := h.AuthService.Register(ctx.Context(), regRequest)
 	if err != nil {
 		h.log.Debug(err)
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+		return HandleGrpcError(ctx, err)
 	}
 
 	// Access token cookie
@@ -76,30 +76,27 @@ func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 		return ctx.Redirect(redirectURI)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(authService.RegisterResponse{
-		Id:           regResponse.Id,
-		Username:     regResponse.Username,
-		Email:        regResponse.Email,
-		AccessToken:  regResponse.AccessToken,
-		RefreshToken: regResponse.RefreshToken,
+	return ctx.Status(fiber.StatusOK).JSON(response.RegistrationSuccess{
+		Email:    regResponse.Email,
+		Username: regResponse.Username,
 	})
 }
 
-// Login handles GET-request on /login endpoint. It checks login and password and sets access and refresh cookie.
+// Login handles GET-request on /login endpoint.
 //
 // Login accepts both Basic auth and login info in request body. If no Authorization header was found in request header,
 // body will be checked for login and password.
 //
-// @Summary      Login
+// @Summary      Login endpoint
 // @Tags         Auth
 // @Description  Login to an account
 // @ID           login-account
 // @Accept       json
 // @Produce      json
-// @Param        input    body      request.LoginRequest  true  "Account info"
-// @Success      200      {object}  response.LoginResponse
-// @Failure      403,500  {object}  response.ErrorResponse
-// @Router       /v1/login [post]
+// @Param        input            body      authService.LoginRequest  true  "username and password"
+// @Success      200              {object}  response.LoginSuccess
+// @Failure      400,401,500,501  {object}  response.Error
+// @Router       /login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 
 	var user model.User
@@ -121,9 +118,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		if authStr[0] != "Basic" {
 			h.log.Debug(ErrUnsupportedAuthMethod)
 
-			return ctx.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": ErrUnsupportedAuthMethod.Error(),
-			})
+			return ctx.Status(fiber.StatusNotImplemented).JSON(response.Error{Error: ErrUnsupportedAuthMethod.Error()})
 		}
 
 		// Decode base64 auth info
@@ -131,17 +126,17 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		if err != nil {
 			h.log.Error(err, "error decoding base64-encoded auth info")
 
-			return ctx.Status(fiber.StatusInternalServerError).JSON(response.Error{Error: err.Error()})
+			return ctx.Status(fiber.StatusUnauthorized).JSON(response.Error{Error: err.Error()})
 		}
 
 		// Split user credentials
 		userCredentials := strings.Split(string(decoded), ":")
 
-		// Check that userCredentials contains only 2 elements (login and password)
+		// Check that userCredentials contains only 2 elements (username and password)
 		if len(userCredentials) != 2 {
 			h.log.Debug(ErrIncorrectCredentialsFormat)
 
-			return ctx.Status(fiber.StatusForbidden).JSON(response.Error{
+			return ctx.Status(fiber.StatusUnauthorized).JSON(response.Error{
 				Error: ErrIncorrectCredentialsFormat.Error(),
 			})
 		}
@@ -158,7 +153,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	loginResponse, err := h.AuthService.Login(ctx.Context(), loginRequest)
 	if err != nil {
 		h.log.Debug(err)
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+		return HandleGrpcError(ctx, err)
 	}
 
 	// Access token cookie
@@ -172,25 +167,22 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 		return ctx.Redirect(redirectURI)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(authService.LoginResponse{
-		Id:           loginResponse.Id,
-		Username:     loginResponse.Username,
-		Email:        loginResponse.Email,
-		LastLogin:    loginResponse.LastLogin,
-		AccessToken:  loginResponse.AccessToken,
-		RefreshToken: loginResponse.RefreshToken,
+	return ctx.Status(fiber.StatusOK).JSON(response.LoginSuccess{
+		Email:     loginResponse.Email,
+		Username:  loginResponse.Username,
+		LastLogin: loginResponse.LastLogin,
 	})
 }
 
-// Validate
-// @Summary      Validate
+// Validate is a validation endpoint
+// @Summary      Validation endpoint
 // @Tags         Auth
 // @Description  This route validates tokens and returns user info
 // @ID           validate
 // @Produce      json
-// @Success      200          {object}  response.ValidateResponse
-// @Failure      401,403,500  {object}  response.ErrorResponse
-// @Router       /v1/validate [post]
+// @Success      200              {object}  response.ValidateSuccess
+// @Failure      400,401,403,500  {object}  response.Error
+// @Router       /validate [post]
 func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
 		AccessToken:  ctx.Cookies("accessToken"),
@@ -200,8 +192,7 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 	validateResponse, err := h.AuthService.Validate(ctx.Context(), validateRequest)
 	if err != nil {
 		h.log.Error(err, "validation error")
-
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+		return HandleGrpcError(ctx, err)
 	}
 
 	// Getting access and refresh tokens TTL
@@ -219,23 +210,26 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 		cookie.SetCookie(ctx, "refreshToken", validateResponse.RefreshToken, refreshTokenTTL)
 	}
 
-	return ctx.Status(fiber.StatusOK).JSON(authService.ValidateResponse{
-		TokenStatus:  validateResponse.TokenStatus,
-		Id:           validateResponse.Id,
-		AccessToken:  validateResponse.AccessToken,
-		RefreshToken: validateResponse.RefreshToken,
+	// If there's redirect_uri param then sending redirect command
+	if redirectURI := ctx.Query("redirect_uri"); redirectURI != "" {
+		return ctx.Status(fiber.StatusOK).Redirect(redirectURI)
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(response.ValidateSuccess{
+		Email:    validateResponse.Email,
+		Username: validateResponse.Username,
 	})
 }
 
-// Info
-// @Summary      Info
+// Info endpoint
+// @Summary      Info endpoint
 // @Tags         Auth
-// @Description  Get login
+// @Description  Get user details
 // @ID           info
 // @Produce      json
-// @Success      200      {string}  ok
-// @Failure      403,500  {object}  response.ErrorResponse
-// @Router       /v1/i [get]
+// @Success      200              {string}  ok
+// @Failure      400,401,403,500  {object}  response.Error
+// @Router       /i [get]
 func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 
 	infoRequest := &authService.ValidateRequest{
@@ -247,28 +241,8 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Debug(err, "validation error")
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+		return HandleGrpcError(ctx, err)
 	}
-	/*dbConn, err := sql.Open("postgres", config.DbConnString)
-	if err != nil {
-		h.log.Fatal(err, "error while opening db connection")
-	}
-	defer func(dbConn *sql.DB) {
-		err = dbConn.Close()
-		if err != nil {
-			h.log.Fatal(err, "error while closing db connection")
-		}
-	}(dbConn)
-
-	userDb := db.NewDatabase(dbConn)*/
-
-	/*user := model.User{
-		ID:        0,
-		Email:     "",
-		Username:  "",
-		Password:  "",
-		LastLogin: time.Time{},
-	}*/
 
 	return ctx.Status(fiber.StatusOK).JSON(authService.InfoResponse{
 		Id:        infoResponse.Id,
@@ -278,15 +252,15 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 	})
 }
 
-// Logout
-// @Summary      Logout
+// Logout endpoint
+// @Summary      Logout endpoint
 // @Tags         Auth
 // @Description  Logout from account
 // @ID           logout-account
 // @Produce      json
-// @Success      200      {string}  ok
-// @Failure      401,500  {object}  response.ErrorResponse
-// @Router       /v1/logout [post]
+// @Success      200  {string}  ok
+// @Failure      500  {string}  Internal  Server  Error
+// @Router       /logout [post]
 func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	validateRequest := &authService.ValidateRequest{
 		AccessToken:  ctx.Cookies("accessToken"),
@@ -297,7 +271,9 @@ func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Error(err, "validation error")
 
-		return ctx.Status(fiber.StatusForbidden).JSON(response.Error{Error: err.Error()})
+		return ctx.Status(fiber.StatusOK).JSON(response.LogoutSuccess{
+			Message: "you were not logged in",
+		})
 	}
 
 	// Removing accessToken cookie
@@ -311,5 +287,7 @@ func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 		return ctx.Redirect(redirectURI)
 	}
 
-	return ctx.SendStatus(fiber.StatusOK)
+	return ctx.Status(fiber.StatusOK).JSON(response.LogoutSuccess{
+		Message: "logout success",
+	})
 }

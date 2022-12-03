@@ -1,35 +1,24 @@
 package token
 
 import (
-	"fmt"
-	"github.com/gofiber/fiber/v2"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-// Error TokenError records failed token validation.
-type Error struct {
-	StatusCode int   // StatusCode is a value that server will return when this error happens.
-	Err        error // Err is the underlying error.
-}
-
-func (e Error) Error() string {
-	return fmt.Sprintf("code %d, %s", e.StatusCode, e.Err)
-}
+var ErrNoToken = status.Error(codes.PermissionDenied, "token is empty")
 
 // ErrParseToken indicates that the token cannot be parsed. Returned status code is 500.
-var ErrParseToken = Error{StatusCode: fiber.StatusInternalServerError, Err: fmt.Errorf("error parsing token")}
+var ErrParseToken = status.Error(codes.PermissionDenied, "token cannot be parsed")
 
 // ErrInvalidToken indicates that the token is invalid. Returned status code is 403.
-var ErrInvalidToken = Error{StatusCode: fiber.StatusForbidden, Err: fmt.Errorf("invalid token")}
+var ErrInvalidToken = status.Error(codes.PermissionDenied, "invalid token")
 
 // ErrExpiredToken indicates that the token has expired. Returned status code is 403.
-var ErrExpiredToken = Error{StatusCode: fiber.StatusForbidden, Err: fmt.Errorf("token has expired")}
+var ErrExpiredToken = status.Error(codes.PermissionDenied, "expired token")
 
 // ErrIncorrectSigningMethod indicates that the token was signed using incorrect method. Returned status code is 403.
 //
 // Tokens should be signed with jwt.SigningMethodHMAC.
-var ErrIncorrectSigningMethod = Error{
-	StatusCode: fiber.StatusForbidden,
-	Err:        fmt.Errorf("incorrect signing method"),
-}
+var ErrIncorrectSigningMethod = status.Error(codes.PermissionDenied, "incorrect signing method")
 
-var ErrIncorrectTTL = Error{StatusCode: fiber.StatusContinue, Err: fmt.Errorf("TTL is less or equal to zero")}
+var ErrIncorrectTTL = status.Error(codes.InvalidArgument, "TTL is less than or equal to 0")

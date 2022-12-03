@@ -1,4 +1,4 @@
-package cookie
+package token
 
 import (
 	"crypto/aes"
@@ -9,8 +9,8 @@ import (
 	"io"
 )
 
-// EncryptCookie Encrypts a cookie value with specific encryption key
-func EncryptCookie(value, key string) (string, error) {
+// EncryptToken Encrypts a JWT token value with specific encryption key
+func EncryptToken(value, key string) (string, error) {
 	keyDecoded, _ := base64.StdEncoding.DecodeString(key)
 	plaintext := []byte(value)
 
@@ -34,8 +34,8 @@ func EncryptCookie(value, key string) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-// DecryptCookie Decrypts a cookie value with specific encryption key
-func DecryptCookie(value, key string) (string, error) {
+// DecryptToken Decrypts a JWT token value with specific encryption key
+func DecryptToken(value, key string) (string, error) {
 	keyDecoded, _ := base64.StdEncoding.DecodeString(key)
 	enc, _ := base64.StdEncoding.DecodeString(value)
 

@@ -18,8 +18,10 @@ func (s *Server) Run() {
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGHUP, syscall.SIGQUIT)
 
-	// Middleware for /auth/v1
-	v1 := s.app.Group("/v1", func(c *fiber.Ctx) error {
+	// Middleware for /api/v1
+	api := s.app.Group("/api")
+
+	v1 := api.Group("/v1", func(c *fiber.Ctx) error {
 		c.Set("Version", "v1.0")
 		return c.Next()
 	})

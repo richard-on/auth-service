@@ -1,16 +1,17 @@
 package server
 
 import (
-	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"time"
 
 	"github.com/ansrivas/fiberprometheus/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+
 	"github.com/richard-on/auth-service/config"
+	_ "github.com/richard-on/auth-service/docs"
 	"github.com/richard-on/auth-service/pkg/logger"
 )
 
@@ -27,8 +28,8 @@ func NewApp() Server {
 	//engine := html.New("./public", ".html")
 
 	app := fiber.New(fiber.Config{
-		Prefork:       config.FiberPrefork,
-		ServerHeader:  "auth.richardhere.dev",
+		Prefork: config.FiberPrefork,
+		//ServerHeader:  "auth.richardhere.dev",
 		CaseSensitive: false,
 		//Views:         engine,
 		ReadTimeout: time.Second * 30,
@@ -61,9 +62,6 @@ func NewApp() Server {
 				return config.Env != "dev"
 			}}),
 		prometheus.Middleware,
-		encryptcookie.New(encryptcookie.Config{
-			Key: config.AES,
-		}),
 		logger.Middleware(
 			logger.NewLogger(config.DefaultWriter,
 				config.LogInfo.Level,

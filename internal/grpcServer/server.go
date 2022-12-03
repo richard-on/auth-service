@@ -151,6 +151,8 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 		return &authService.ValidateResponse{
 			TokenStatus:  authService.ValidateResponse_UPDATE,
 			Id:           (*refreshTokenClaims)["id"].(string),
+			Username:     (*refreshTokenClaims)["username"].(string),
+			Email:        (*refreshTokenClaims)["email"].(string),
 			AccessToken:  updatedAccessToken.EncryptedToken,
 			RefreshToken: updatedRefreshToken.EncryptedToken,
 		}, nil
@@ -166,6 +168,8 @@ func (s *GRPCServer) Validate(_ context.Context, req *authService.ValidateReques
 	return &authService.ValidateResponse{
 		TokenStatus:  authService.ValidateResponse_OK,
 		Id:           (*accessTokenClaims)["id"].(string),
+		Username:     (*accessTokenClaims)["username"].(string),
+		Email:        (*accessTokenClaims)["email"].(string),
 		AccessToken:  accessToken.EncryptedToken,
 		RefreshToken: refreshToken.EncryptedToken,
 	}, nil

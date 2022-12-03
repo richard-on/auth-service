@@ -7,7 +7,6 @@ import (
 	"time"
 
 	_ "github.com/lib/pq"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/richard-on/auth-service/config"
@@ -39,11 +38,13 @@ func (db *DB) AddUser(user *model.User) error {
 	// Check that login satisfies requirements.
 	compile, err := regexp.Compile("^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$")
 	if err != nil {
-		log.Fatal().Stack().Err(err)
+		db.Log.Debug(err)
+
 		return err
 	}
 	if !compile.MatchString(user.Username) || len(user.Username) > 25 || len(user.Username) < 5 {
-		log.Error().Err(err)
+		db.Log.Debug(err)
+
 		return ErrInvalidLogin
 	}
 

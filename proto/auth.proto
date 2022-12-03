@@ -53,8 +53,10 @@ message ValidateResponse {
   }
   TokenStatus tokenStatus = 1;
   string id = 2;
-  string accessToken = 3;
-  string refreshToken = 4;
+  string username = 3;
+  string email = 4;
+  string accessToken = 5;
+  string refreshToken = 6;
 }
 
 message InfoResponse {

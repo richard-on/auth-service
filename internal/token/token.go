@@ -4,22 +4,23 @@ package token
 import (
 	"errors"
 	"fmt"
-	"github.com/getsentry/sentry-go"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/richard-on/auth-service/config"
-	"github.com/richard-on/auth-service/pkg/cookie"
-	"github.com/rs/zerolog/log"
 	"strings"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/rs/zerolog/log"
+
+	"github.com/richard-on/auth-service/config"
 )
 
-// JwtToken is a wrapper for jwt.Token.
+// EncryptedJWT is a wrapper for encrypted token and its key
 type EncryptedJWT struct {
 	EncryptedToken string
 	Key            string
 }
 
-// NewToken creates Token from jwt.MapClaims
+// NewEncryptedToken creates and encrypts a Token from user info, TTL and encryption key
 func NewEncryptedToken(id, email, username string, ttl int64, key string) (EncryptedJWT, error) {
 	if ttl <= 0 {
 		ttl = config.TTL.Access
@@ -43,7 +44,7 @@ func NewEncryptedToken(id, email, username string, ttl int64, key string) (Encry
 		return EncryptedJWT{}, errors.New("error creating a token")
 	}
 
-	encrypted, err := cookie.EncryptCookie(t.Raw, key)
+	encrypted, err := EncryptToken(t.Raw, key)
 	if err != nil {
 		return EncryptedJWT{}, errors.New("error encrypting a token")
 	}
@@ -57,7 +58,11 @@ func NewEncryptedToken(id, email, username string, ttl int64, key string) (Encry
 // This method is similar to Parse, except it doesn't return mapClaims.
 func (t *EncryptedJWT) Check() error {
 
-	tokenRaw, err := cookie.DecryptCookie(t.EncryptedToken, t.Key)
+	if t.EncryptedToken == "" {
+		return ErrNoToken
+	}
+
+	tokenRaw, err := DecryptToken(t.EncryptedToken, t.Key)
 	if err != nil {
 		return err
 	}
@@ -96,7 +101,7 @@ func (t *EncryptedJWT) Check() error {
 // Parse parses jwt.Token and returns *jwt.MapClams for JSON decoding.
 func (t *EncryptedJWT) Parse() (*jwt.MapClaims, error) {
 
-	tokenRaw, err := cookie.DecryptCookie(t.EncryptedToken, t.Key)
+	tokenRaw, err := DecryptToken(t.EncryptedToken, t.Key)
 	if err != nil {
 		return nil, err
 	}

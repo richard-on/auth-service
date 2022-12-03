@@ -23,16 +23,16 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/auth/v1/i": {
+        "/i": {
             "get": {
-                "description": "Get login",
+                "description": "Get user details",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Info",
+                "summary": "Info endpoint",
                 "operationId": "info",
                 "responses": {
                     "200": {
@@ -41,22 +41,34 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     }
                 }
             }
         },
-        "/auth/v1/login": {
+        "/login": {
             "post": {
                 "description": "Login to an account",
                 "consumes": [
@@ -68,16 +80,16 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Login",
+                "summary": "Login endpoint",
                 "operationId": "login-account",
                 "parameters": [
                     {
-                        "description": "Account info",
+                        "description": "username and password",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.LoginRequest"
+                            "$ref": "#/definitions/authService.LoginRequest"
                         }
                     }
                 ],
@@ -85,25 +97,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.LoginResponse"
+                            "$ref": "#/definitions/response.LoginSuccess"
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     }
                 }
             }
         },
-        "/auth/v1/logout": {
+        "/logout": {
             "post": {
                 "description": "Logout from account",
                 "produces": [
@@ -112,7 +136,7 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Logout",
+                "summary": "Logout endpoint",
                 "operationId": "logout-account",
                 "responses": {
                     "200": {
@@ -121,22 +145,16 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "type": "string"
                         }
                     }
                 }
             }
         },
-        "/auth/v1/reg": {
+        "/reg": {
             "post": {
                 "description": "Register a new user",
                 "consumes": [
@@ -148,16 +166,16 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Registration",
+                "summary": "Registration endpoint",
                 "operationId": "registration",
                 "parameters": [
                     {
-                        "description": "Account info",
+                        "description": "Register request",
                         "name": "input",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.RegistrationRequest"
+                            "$ref": "#/definitions/authService.RegisterRequest"
                         }
                     }
                 ],
@@ -165,25 +183,43 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.RegistrationResponse"
+                            "$ref": "#/definitions/response.RegistrationSuccess"
+                        }
+                    },
+                    "303": {
+                        "description": "See Other",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     }
                 }
             }
         },
-        "/auth/v1/validate": {
+        "/validate": {
             "post": {
                 "description": "This route validates tokens and returns user info",
                 "produces": [
@@ -192,31 +228,37 @@ const docTemplate = `{
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Validate",
+                "summary": "Validation endpoint",
                 "operationId": "validate",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.ValidateResponse"
+                            "$ref": "#/definitions/response.ValidateSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
+                            "$ref": "#/definitions/response.Error"
                         }
                     }
                 }
@@ -224,9 +266,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "request.LoginRequest": {
+        "authService.LoginRequest": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -235,9 +280,12 @@ const docTemplate = `{
                 }
             }
         },
-        "request.RegistrationRequest": {
+        "authService.RegisterRequest": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -246,7 +294,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ErrorResponse": {
+        "response.Error": {
             "type": "object",
             "properties": {
                 "error": {
@@ -254,13 +302,13 @@ const docTemplate = `{
                 }
             }
         },
-        "response.LoginResponse": {
+        "response.LoginSuccess": {
             "type": "object",
             "properties": {
-                "accessToken": {
+                "email": {
                     "type": "string"
                 },
-                "refreshToken": {
+                "lastLogin": {
                     "type": "string"
                 },
                 "username": {
@@ -268,13 +316,10 @@ const docTemplate = `{
                 }
             }
         },
-        "response.RegistrationResponse": {
+        "response.RegistrationSuccess": {
             "type": "object",
             "properties": {
-                "accessToken": {
-                    "type": "string"
-                },
-                "refreshToken": {
+                "email": {
                     "type": "string"
                 },
                 "username": {
@@ -282,9 +327,12 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ValidateResponse": {
+        "response.ValidateSuccess": {
             "type": "object",
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -296,8 +344,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "https://auth.richardhere.dev/",
-	BasePath:         "/",
+	Host:             "localhost/",
+	BasePath:         "api/v1/",
 	Schemes:          []string{},
 	Title:            "Auth Service API",
 	Description:      "",
