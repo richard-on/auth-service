@@ -10,13 +10,11 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
-
-      - name: Checkout code
-        uses: actions/checkout@v3
 
       - name: Build and test Docker image
         run: docker-compose up
@@ -47,6 +45,8 @@ jobs:
   postman-test:
     runs-on: ubuntu-latest
     steps:
+      - name: Sleep for 100s
+        run: sleep 100s
       - uses: actions/checkout@v3
       - name: Install Postman CLI
         run: |
