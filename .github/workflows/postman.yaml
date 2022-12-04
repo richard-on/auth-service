@@ -29,20 +29,15 @@ jobs:
           GODOTENV: ${{ secrets.GODOTENV }}
           FIBER_PREFORK: ${{ secrets.FIBER_PREFORK }}
           MAX_CPU: {{ secrets.MAX_CPU }}
-
           LOG_OUTPUT: ${{ secrets.LOG_OUTPUT }}
           LOG_CW: ${{ secrets.LOG_CW }}
           LOG_FILE: ${{ secrets.LOG_FILE }}
           LOG_LEVEL: ${{ secrets.LOG_LEVEL }}
-
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SENTRY_TSR: ${{ secrets.SENTRY_TSR }}
-
           SECURE_COOKIE: ${{ secrets.SECURE_COOKIE }}
-
           TTL_ACCESS: ${{ secrets.TTL_ACCESS }}
           TTL_REFRESH: ${{ secrets.TTL_REFRESH }}
-
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
