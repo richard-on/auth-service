@@ -42,20 +42,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
-  postman-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Postman CLI
-        run: |
-          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-
-      - name: Run API tests
-        run: |
-          postman collection run "${{ github.workspace }}/postman/collections/Auth.json" --integration-id "128430-${{ github.run_id }}"
-          # Lint your API using Postman CLI
-          postman api lint --integration-id 128430
+      - name: Run Newman test
+      - uses: actions/checkout@master
+      - uses: matt-ball/newman-action@master
+        with:
+          collection: ./postman/collections/Auth.json
