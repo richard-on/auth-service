@@ -10,16 +10,14 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Go
-        uses: actions/setup-go@v3
+      - uses: actions/checkout@v3
+
+      - name: Test with docker-compose
+        uses: smartlyio/docker-compose-action@v1
         with:
-          go-version: 1.19
-
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Build and test Docker image
-        run: docker-compose up -d
+          composeFile: docker-compose.yml
+          serviceName: test
+          build: true
         env:
           HOST: ${{ secrets.HOST }}
           ENV: ${{ secrets.ENV }}
