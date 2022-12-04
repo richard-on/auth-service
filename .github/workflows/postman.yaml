@@ -2,14 +2,16 @@ name: Docker-compose
 
 on:
   push:
-    - main
-    - dev
+    branches:
+      - main
+      - dev
   workflow_dispatch:
 
 jobs:
   docker-compose:
     name: Build Docker image
     runs-on: ubuntu-latest
+    needs: Lint
     steps:
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -17,7 +19,7 @@ jobs:
           go-version: 1.19
 
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Build and test Docker image
         run: docker-compose up -d
@@ -28,7 +30,7 @@ jobs:
           AES: ${{ secrets.AES }}
           GODOTENV: ${{ secrets.GODOTENV }}
           FIBER_PREFORK: ${{ secrets.FIBER_PREFORK }}
-          MAX_CPU: ${{ secrets.MAX_CPU }}
+          MAX_CPU: {{ secrets.MAX_CPU }}
           LOG_OUTPUT: ${{ secrets.LOG_OUTPUT }}
           LOG_CW: ${{ secrets.LOG_CW }}
           LOG_FILE: ${{ secrets.LOG_FILE }}
