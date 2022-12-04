@@ -15,7 +15,7 @@ FROM alpine:latest
 WORKDIR /auth
 
 COPY --from=builder /auth/run /auth/run
-COPY --from=builder /auth/.env /auth/.env
+# COPY --from=builder /auth/.env /auth/.env
 COPY --from=builder /auth/public /auth/public/
 
 EXPOSE 80 4000
