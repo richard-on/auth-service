@@ -10,14 +10,16 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Test with docker-compose
-        uses: smartlyio/docker-compose-action@v1
+      - name: Setup Go
+        uses: actions/setup-go@v3
         with:
-          composeFile: docker-compose.yml
-          serviceName: test
-          build: true
+          go-version: 1.19
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build and test Docker image
+        run: docker-compose up -d
         env:
           HOST: ${{ secrets.HOST }}
           ENV: ${{ secrets.ENV }}
@@ -25,7 +27,7 @@ jobs:
           AES: ${{ secrets.AES }}
           GODOTENV: ${{ secrets.GODOTENV }}
           FIBER_PREFORK: ${{ secrets.FIBER_PREFORK }}
-          MAX_CPU: ${{ secrets.MAX_CPU }}
+          MAX_CPU: {{ secrets.MAX_CPU }}
           LOG_OUTPUT: ${{ secrets.LOG_OUTPUT }}
           LOG_CW: ${{ secrets.LOG_CW }}
           LOG_FILE: ${{ secrets.LOG_FILE }}
@@ -42,13 +44,16 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
+  postman-test:
+    runs-on: ubuntu-latest
+    needs: docker-compose
+    steps:
+      - uses: actions/checkout@v3
       - name: Install Postman CLI
         run: |
           curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-
       - name: Login to Postman CLI
         run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-
       - name: Run API tests
         run: |
           postman collection run "${{ github.workspace }}/postman/collections/Auth.json" --integration-id "128430-${{ github.run_id }}"
