@@ -43,7 +43,6 @@ jobs:
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
       - name: Run Newman test
-      - uses: actions/checkout@master
       - uses: matt-ball/newman-action@master
         with:
           collection: ./postman/collections/Auth.json
