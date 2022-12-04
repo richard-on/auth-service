@@ -38,6 +38,29 @@ jobs:
 
       - name: Build
         run: go run cmd/auth/main.go
+        environment:
+          - ENV
+          - SECRET
+          - AES
+          - GODOTENV
+          - FIBER_PREFORK
+          - MAX_CPU
+          - LOG_OUTPUT
+          - LOG_LEVEL
+          - LOG_FILE
+          - LOG_CW
+          - SENTRY_DSN
+          - SENTRY_TSR
+          - HOST
+          - SECURE_COOKIE
+          - DB_NAME
+          - DB_HOST
+          - DB_PORT
+          - DB_USER
+          - DB_PASSWORD
+          - DB_SSLMODE
+          - TTL_ACCESS
+          - TTL_REFRESH
         env:
           GOOS: linux
           GOARCH: amd64
