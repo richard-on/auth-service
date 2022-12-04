@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - image: ghcr.io/richard-on/auth-service:latest
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -f
+                - -k
+                - http://127.0.0.1/
+            initialDelaySeconds: 120
+            failureThreshold: 10
+            periodSeconds: 60
+            timeoutSeconds: 5
+          name: auth
+          ports:
+            - containerPort: 80
+            - containerPort: 4000
+          envFrom:
+            - configMapRef:
+                name: auth-config
+            - secretRef:
+                name: auth-secret
+          resources:
+            limits:
+              cpu: 200m
+              memory: 60Mi
+            requests:
+              cpu: 100m
+              memory: 30Mi
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: github-container-registry

@@ -1,0 +1,66 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15.1
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres:/var/lib/postgresql/data
+      - ./initDB/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  auth:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    image: ghcr.io/richard-on/auth-service:latest
+    container_name: auth-service
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "-k", "https://127.0.0.1/" ]
+      start_period: 10s
+      interval: 1m
+      timeout: 5s
+      retries: 10
+    ports:
+      - "80:80"
+      - "4000:4000"
+    links:
+      - postgres
+    environment:
+      - ENV
+      - SECRET
+      - AES
+      - GODOTENV
+      - FIBER_PREFORK
+      - MAX_CPU
+      - LOG_OUTPUT
+      - LOG_LEVEL
+      - LOG_FILE
+      - LOG_CW
+      - SENTRY_DSN
+      - SENTRY_TSR
+      - HOST
+      - SECURE_COOKIE
+      - DB_NAME
+      - DB_HOST
+      - DB_PORT
+      - DB_USER
+      - DB_PASSWORD
+      - DB_SSLMODE
+      - TTL_ACCESS
+      - TTL_REFRESH
+
+volumes:
+  postgres:
+    driver: local

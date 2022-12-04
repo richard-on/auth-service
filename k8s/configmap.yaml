@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-config
+data:
+  ENV: "production"
+  GODOTENV: "0"
+  FIBER_PREFORK: "0"
+  MAX_CPU: "4"
+  LOG_OUTPUT: "stdout"
+  LOG_LEVEL: "trace"
+  LOG_FILE: "auth.log"
+  LOG_CW: "0"
+  SENTRY_TSR: "0.5"
+  SECURE_COOKIE: "1"
+  TTL_ACCESS: "60"
+  TTL_REFRESH: "3600"

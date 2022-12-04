@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option go_package = "./authService;authService";
+
+package authService;
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {}
+  //rpc VerifyRegistration(VerifyRequest) returns (VerifyResponse) {}
+  rpc Login(LoginRequest) returns (LoginResponse) {}
+  rpc Validate(ValidateRequest) returns (ValidateResponse) {}
+  rpc Info(ValidateRequest) returns (InfoResponse) {}
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message RegisterResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string accessToken = 4;
+  string refreshToken = 5;
+}
+
+message LoginRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message LoginResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string lastLogin = 4;
+  string accessToken = 5;
+  string refreshToken = 6;
+}
+
+message ValidateRequest {
+  string accessToken = 1;
+  string refreshToken = 2;
+}
+
+message ValidateResponse {
+  enum TokenStatus {
+    OK = 0;
+    UPDATE = 1;
+  }
+  TokenStatus tokenStatus = 1;
+  string id = 2;
+  string username = 3;
+  string email = 4;
+  string accessToken = 5;
+  string refreshToken = 6;
+}
+
+message InfoResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string lastLogin = 4;
+}

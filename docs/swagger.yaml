@@ -1,0 +1,220 @@
+basePath: api/v1/
+definitions:
+  authService.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  authService.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  response.Error:
+    properties:
+      error:
+        type: string
+    type: object
+  response.LoginSuccess:
+    properties:
+      email:
+        type: string
+      lastLogin:
+        type: string
+      username:
+        type: string
+    type: object
+  response.RegistrationSuccess:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+  response.ValidateSuccess:
+    properties:
+      email:
+        type: string
+      username:
+        type: string
+    type: object
+host: localhost/
+info:
+  contact:
+    name: Richard Ragusski
+    url: https://richardhere.dev/
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Auth Service API
+  version: "1.0"
+paths:
+  /i:
+    get:
+      description: Get user details
+      operationId: info
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Info endpoint
+      tags:
+      - Auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login to an account
+      operationId: login-account
+      parameters:
+      - description: username and password
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/authService.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LoginSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+        "501":
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Login endpoint
+      tags:
+      - Auth
+  /logout:
+    post:
+      description: Logout from account
+      operationId: logout-account
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Logout endpoint
+      tags:
+      - Auth
+  /reg:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      operationId: registration
+      parameters:
+      - description: Register request
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/authService.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegistrationSuccess'
+        "303":
+          description: See Other
+          schema:
+            $ref: '#/definitions/response.Error'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Registration endpoint
+      tags:
+      - Auth
+  /validate:
+    post:
+      description: This route validates tokens and returns user info
+      operationId: validate
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ValidateSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Validation endpoint
+      tags:
+      - Auth
+swagger: "2.0"
