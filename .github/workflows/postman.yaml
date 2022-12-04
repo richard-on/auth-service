@@ -10,7 +10,6 @@ jobs:
     name: Build Docker image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
@@ -43,6 +42,6 @@ jobs:
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
       - name: Run Newman test
-      - uses: matt-ball/newman-action@master
+        uses: matt-ball/newman-action@master
         with:
           collection: ./postman/collections/Auth.json
