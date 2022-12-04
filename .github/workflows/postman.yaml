@@ -1,15 +1,15 @@
-name: Docker-compose and Postman tests
+name: Docker-compose
 
 on:
   push:
-  pull_request:
+    - main
+    - dev
   workflow_dispatch:
 
 jobs:
   docker-compose:
     name: Build Docker image
     runs-on: ubuntu-latest
-    needs: Lint
     steps:
       - name: Setup Go
         uses: actions/setup-go@v3
@@ -17,7 +17,7 @@ jobs:
           go-version: 1.19
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build and test Docker image
         run: docker-compose up -d
@@ -28,7 +28,7 @@ jobs:
           AES: ${{ secrets.AES }}
           GODOTENV: ${{ secrets.GODOTENV }}
           FIBER_PREFORK: ${{ secrets.FIBER_PREFORK }}
-          MAX_CPU: {{ secrets.MAX_CPU }}
+          MAX_CPU: ${{ secrets.MAX_CPU }}
           LOG_OUTPUT: ${{ secrets.LOG_OUTPUT }}
           LOG_CW: ${{ secrets.LOG_CW }}
           LOG_FILE: ${{ secrets.LOG_FILE }}
@@ -44,18 +44,3 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
-
-  postman-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Postman CLI
-        run: |
-          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
-      - name: Run API tests
-        run: |
-          postman collection run "${{ github.workspace }}/postman/collections/Auth.json" --integration-id "128430-${{ github.run_id }}"
-          # Lint your API using Postman CLI
-          postman api lint --integration-id 128430
