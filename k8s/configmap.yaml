@@ -9,8 +9,8 @@ data:
   MAX_CPU: 4
   LOG_OUTPUT: stdout
   LOG_LEVEL: trace
-  LOG_FILE: website.log
-  LOG_CW: true
+  LOG_FILE: auth.log
+  LOG_CW: false
   SENTRY_TSR: 0.5
   SECURE_COOKIE: 0
   TTL_ACCESS: 60

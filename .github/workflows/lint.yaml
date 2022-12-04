@@ -1,0 +1,44 @@
+name: Lint and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: GolangCI Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
+
+  build:
+    name: Build
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build
+        run: go build -v cmd/website/main.go
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
