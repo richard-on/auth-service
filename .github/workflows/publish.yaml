@@ -2,9 +2,8 @@ name: Publish
 
 on:
   push:
-    tags:
-      - v0.*
-      - v1.*
+    branches:
+      - ci/cd
 
 jobs:
   publish:
