@@ -7,6 +7,26 @@ on:
       - v1.*
 
 jobs:
+  lint:
+    name: Lint and Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow Dispatch
+        uses: benc-uk/workflow-dispatch@v1.2.2
+        with:
+          workflow: Lint and Build
+          repo: richard-on/auth-service
+
+  docker-compose:
+    name: Docker-compose
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow Dispatch
+        uses: benc-uk/workflow-dispatch@v1.2.2
+        with:
+          workflow: Docker-compose
+          repo: richard-on/auth-service
+
   publish:
     name: Publish to GitHub Container Registry
     runs-on: ubuntu-latest

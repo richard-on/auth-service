@@ -1,8 +1,9 @@
-name: Docker-compose and Postman tests
+name: Docker-compose
 
 on:
   push:
-  pull_request:
+    - main
+    - dev
   workflow_dispatch:
 
 jobs:
@@ -43,8 +44,3 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
-
-      - name: Run Newman test
-        uses: matt-ball/newman-action@master
-        with:
-          collection: ./postman/collections/Auth.json
