@@ -11,13 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
 
+      - name: Install Postman CLI
+        run: |
+          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
+
+      - name: Login to Postman CLI
+        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
+
       - name: Build and test Docker image
-        run: docker-compose up
+        run: docker-compose up -d
         env:
           HOST: ${{ secrets.HOST }}
           ENV: ${{ secrets.ENV }}
@@ -42,17 +50,6 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
 
-  postman-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Sleep for 100s
-        run: sleep 100s
-      - uses: actions/checkout@v3
-      - name: Install Postman CLI
-        run: |
-          curl -o- "https://dl-cli.pstmn.io/install/linux64.sh" | sh
-      - name: Login to Postman CLI
-        run: postman login --with-api-key ${{ secrets.POSTMAN_API_KEY }}
       - name: Run API tests
         run: |
           postman collection run "${{ github.workspace }}/postman/collections/Auth.json" --integration-id "128430-${{ github.run_id }}"
