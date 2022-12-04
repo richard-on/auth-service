@@ -28,7 +28,7 @@ jobs:
           AES: ${{ secrets.AES }}
           GODOTENV: ${{ secrets.GODOTENV }}
           FIBER_PREFORK: ${{ secrets.FIBER_PREFORK }}
-          MAX_CPU: {{ secrets.MAX_CPU }}
+          MAX_CPU: ${{ secrets.MAX_CPU }}
           LOG_OUTPUT: ${{ secrets.LOG_OUTPUT }}
           LOG_CW: ${{ secrets.LOG_CW }}
           LOG_FILE: ${{ secrets.LOG_FILE }}
