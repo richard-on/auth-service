@@ -8,7 +8,6 @@ on:
 jobs:
   publish:
     name: Publish to GitHub Container Registry
-    needs: dockerBuild
     runs-on: ubuntu-latest
     steps:
       - name: Set up Docker Buildx
