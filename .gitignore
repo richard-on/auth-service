@@ -9,9 +9,6 @@
 /logs/
 *.log
 
-# SQL create files
-*.sql
-
 # Binaries for programs and plugins
 *.exe
 *.exe~

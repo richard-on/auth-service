@@ -62,7 +62,7 @@ func (h *AuthHandler) Registration(ctx *fiber.Ctx) error {
 	regResponse, err := h.AuthService.Register(ctx.Context(), regRequest)
 	if err != nil {
 		h.log.Debug(err)
-		return HandleGrpcError(ctx, err)
+		return authService.HandleGrpcError(ctx, err)
 	}
 
 	// Access token cookie
@@ -153,7 +153,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	loginResponse, err := h.AuthService.Login(ctx.Context(), loginRequest)
 	if err != nil {
 		h.log.Debug(err)
-		return HandleGrpcError(ctx, err)
+		return authService.HandleGrpcError(ctx, err)
 	}
 
 	// Access token cookie
@@ -192,7 +192,7 @@ func (h *AuthHandler) Validate(ctx *fiber.Ctx) error {
 	validateResponse, err := h.AuthService.Validate(ctx.Context(), validateRequest)
 	if err != nil {
 		h.log.Error(err, "validation error")
-		return HandleGrpcError(ctx, err)
+		return authService.HandleGrpcError(ctx, err)
 	}
 
 	// Getting access and refresh tokens TTL
@@ -241,7 +241,7 @@ func (h *AuthHandler) Info(ctx *fiber.Ctx) error {
 	if err != nil {
 		h.log.Debug(err, "validation error")
 
-		return HandleGrpcError(ctx, err)
+		return authService.HandleGrpcError(ctx, err)
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(authService.InfoResponse{

@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"strconv"
 	"time"
 
 	"github.com/ansrivas/fiberprometheus/v2"
@@ -9,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+	"github.com/gofiber/template/html"
 
 	"github.com/richard-on/auth-service/config"
 	_ "github.com/richard-on/auth-service/docs"
@@ -25,14 +27,14 @@ func NewApp() Server {
 		config.LogInfo.Level,
 		"auth-server")
 
-	//engine := html.New("./public", ".html")
+	engine := html.New("./public", ".html")
 
 	app := fiber.New(fiber.Config{
-		Prefork: config.FiberPrefork,
-		//ServerHeader:  "auth.richardhere.dev",
+		Prefork:       config.FiberPrefork,
+		ServerHeader:  "auth.richardhere.dev",
 		CaseSensitive: false,
-		//Views:         engine,
-		ReadTimeout: time.Second * 30,
+		Views:         engine,
+		ReadTimeout:   time.Second * 30,
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 
 			code := fiber.StatusInternalServerError
@@ -40,7 +42,7 @@ func NewApp() Server {
 				code = e.Code
 			}
 
-			err = ctx.SendStatus(code)
+			err = ctx.Status(fiber.StatusNotFound).Render(strconv.Itoa(code), fiber.Map{})
 			if err != nil {
 				// In case the SendFile fails
 				return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
@@ -54,7 +56,6 @@ func NewApp() Server {
 	prometheus.RegisterAt(app, "/metrics")
 
 	app.Use(
-		//csrf.New(),
 		cors.New(cors.ConfigDefault),
 		recover.New(),
 		pprof.New(

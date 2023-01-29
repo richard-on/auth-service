@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "./auth;auth";
+
+package auth;
+
+service Auth {
+	rpc Registration(RegistrationRequest) returns (RegistrationResponse) {}
+	rpc Login(LoginRequest) returns (LoginResponse) {}
+}
+
+message RegistrationRequest {
+	int64 id = 1;
+	string username = 2;
+	string password = 3;
+}
+
+message RegistrationResponse {
+	int64 id = 1;
+	string username = 2;
+}
+
+message LoginRequest {
+	string username = 1;
+	string email = 2;
+	string password = 3;
+}
+
+message LoginResponse {
+	string id = 1;
+	string username = 2;
+	string email = 3;
+	string lastLogin = 4;
+	string accessToken = 5;
+	string refreshToken = 6;
+}

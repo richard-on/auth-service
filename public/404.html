@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang=en dir=auto>
+<head>
+    <meta charset=utf-8>
+    <meta http-equiv=x-ua-compatible content="IE=edge">
+    <meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+    <meta name=robots content="index, follow">
+    <title>404 Page not found | Richard Ragusski</title>
+    <meta name=keywords content>
+    <meta name=description content="404 Page not found">
+    <meta name=author content="Richard Ragusski">
+    <link rel=canonical href=https://auth.richardhere.dev/404.html>
+    <link crossorigin=anonymous href=style.css rel="preload stylesheet" as=style>
+    <link rel=icon href=https://richardhere.dev/favicon/favicon.ico>
+    <link rel=icon type=image/png sizes=16x16 href=https://richardhere.dev/favicon/favicon-16x16.ico>
+    <link rel=icon type=image/png sizes=32x32 href=https://richardhere.dev/favicon/favicon-32x32.ico>
+    <link rel=apple-touch-icon href=https://richardhere.dev/favicon/apple-touch-icon.ico>
+    <link rel=mask-icon href=https://richardhere.dev/favicon/safari-pinned-tab.ico>
+    <meta name=theme-color content="#2e2e33">
+    <meta name=msapplication-TileColor content="#2e2e33">
+    <meta property="og:title" content="404 Page not found">
+    <meta property="og:description" content="404 Page not found">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://richardhere.dev/404.html">
+    <meta property="og:site_name" content="Richard Ragusski, Golang Developer">
+    <meta name=twitter:title content="404 Page not found">
+    <meta name=twitter:description content="404 Page not found">
+</head>
+<body class=list id=top>
+<script>
+    localStorage.getItem("pref-theme") === "dark" ? document.body.classList.add("dark") : localStorage.getItem("pref-theme") === "light" ? document.body.classList.remove("dark") : window.matchMedia("(prefers-color-scheme: dark)").matches && document.body.classList.add("dark")
+</script>
+<main class=main>
+    <div class=not-found><span>404</span><span class=not-found-text>Page not found.</span><a class=return-home href=https://richardhere.dev />Return to Homepage</a></div>
+</main>
+<footer class=footer><span>&copy; 2022 <a href=https://richardhere.dev />Richard Ragusski</a>.</span><span><a class=underlined href=mailto:me@richardhere.dev>Contact me</a></span></footer><a href=#top aria-label="go to top" title="Go to Top (Alt + G)" class=top-link id=top-link accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor">
+    <path d="M12 6H0l6-6z" />
+</svg></a>
+<script>
+    let menu = document.getElementById("menu");
+    menu && (menu.scrollLeft = localStorage.getItem("menu-scroll-position"), menu.onscroll = function() {
+        localStorage.setItem("menu-scroll-position", menu.scrollLeft)
+    }), document.querySelectorAll('a[href^="#"]').forEach(e => {
+        e.addEventListener("click", function(e) {
+            e.preventDefault();
+            var t = this.getAttribute("href").substr(1);
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches ? document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView() : document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({
+                behavior: "smooth"
+            }), t === "top" ? history.replaceState(null, null, " ") : history.pushState(null, null, `#${t}`)
+        })
+    })
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function() {
+        document.body.scrollTop > 800 || document.documentElement.scrollTop > 800 ? (mybutton.style.visibility = "visible", mybutton.style.opacity = "1") : (mybutton.style.visibility = "hidden", mybutton.style.opacity = "0")
+    }
+</script>
+</body>
+</html>

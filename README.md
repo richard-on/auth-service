@@ -1,3 +1,3 @@
-<h1 align=center>Authentification service</h1>
-<h1 align=center><s href="https://richardhere.dev/" rel="nofollow">for richardhere.dev</s></h1>
+<h1 align=center>Authentication service</h1>
+<h1 align=center><a href="https://richardhere.dev/" rel="nofollow">auth.richardhere.dev</a></h1>
 <br>
